@@ -15,10 +15,13 @@ export class DeleteCommand extends CommandBase {
             new ConfirmCommandParameter('Are you sure you want to delete file "'+ item.label + '"?')
         ];
 
-        return !!item.project;
+        return (!!item && !!item.project) ||
+            (!!this.provider.activeNode &&
+                !!this.provider.activeNode.project);
     }
 
     protected async runCommand(item: TreeItem, args: string[]): Promise<void> {
+        item = !!item ? item : this.provider.activeNode;
         
         try {
             if (item.contextValue.startsWith(ContextValues.ProjectFile))

@@ -16,11 +16,13 @@ export class CreateFolderCommand extends CommandBase {
     }
 
     protected shouldRun(item: TreeItem): boolean {
-        return !!item.project;
+        return !!item.project || !!this.provider.activeNode;
     }
 
     protected async runCommand(item: TreeItem, args: string[]): Promise<void> {
         if (!args || args.length <= 0) return;
+
+        item = !!item ? item  : this.provider.activeNode;
 
         try {
             let targetpath: string = item.path;

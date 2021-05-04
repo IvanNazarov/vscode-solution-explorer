@@ -13,7 +13,7 @@ var eventAggregator, solutionExplorerProvider, solutionExplorerCommands, solutio
 export function activate(context: vscode.ExtensionContext) {
     const paths = vscode.workspace.workspaceFolders.map(w => w.uri.fsPath) || [];
     eventAggregator = new EventAggregator();
-    solutionExplorerProvider = new SolutionExplorerProvider(paths, eventAggregator);
+    solutionExplorerProvider = new SolutionExplorerProvider(context, paths, eventAggregator);
     solutionExplorerCommands = new SolutionExplorerCommands(context, solutionExplorerProvider);
     solutionExplorerFileWatcher = new SolutionExplorerFileWatcher(eventAggregator);
     solutionExplorerOutputChannel = new SolutionExplorerOutputChannel(eventAggregator);

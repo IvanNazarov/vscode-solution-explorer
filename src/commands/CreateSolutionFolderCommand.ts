@@ -17,11 +17,15 @@ export class CreateSolutionFolderCommand extends CommandBase {
     }
 
     protected shouldRun(item: TreeItem): boolean {
-        return !!item.solution;
+        return (!!item && !!item.solution)
+            || (!!this.provider.activeNode &&
+                !!this.provider.activeNode.solution);
     }
 
     protected async runCommand(item: TreeItem, args: string[]): Promise<void> {
         if (!args || args.length <= 0) return;
+
+        item = !!item ? item : this.provider.activeNode;
 
         let projectInSolution: ProjectInSolution = (<any>item).projectInSolution;
         if (!projectInSolution) {
@@ -38,13 +42,13 @@ export class CreateSolutionFolderCommand extends CommandBase {
 
         try {
             let data: string = await fs.readFile(item.solution.FullPath, 'utf8');
-            let lines: string[] = data.split('\n'); 
+            let lines: string[] = data.split('\n');
             let guid: string = uuid.v1().toUpperCase();
             let done = lines.some((line, index, arr) => {
                 if (line.trim() == 'Global') {
                     lines.splice(index, 0,
-                    'Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "' + args[0] + '", "' + args[0] + '", "{' + guid + '}"\r',
-                    'EndProject\r');
+                        'Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "' + args[0] + '", "' + args[0] + '", "{' + guid + '}"\r',
+                        'EndProject\r');
                     return true;
                 }
 
@@ -58,12 +62,12 @@ export class CreateSolutionFolderCommand extends CommandBase {
                             '		{' + guid + '} = ' + projectInSolution.projectGuid + '\r'
                         );
                         return true;
-                    }    
+                    }
 
                     if (line.trim() == 'EndGlobal') {
                         endGlobalIndex = index;
                     }
-    
+
                     return false;
                 });
 
@@ -75,7 +79,7 @@ export class CreateSolutionFolderCommand extends CommandBase {
                     done = true;
                 }
             }
-            
+
             if (done) {
                 await fs.writeFile(item.solution.FullPath, lines.join('\n'));
                 this.provider.logger.log("Solution folder created: " + args[0]);
@@ -83,8 +87,8 @@ export class CreateSolutionFolderCommand extends CommandBase {
             else {
                 this.provider.logger.error('Can not create solution folder');
             }
-        } catch(ex) {
+        } catch (ex) {
             this.provider.logger.error('Can not create solution folder: ' + ex);
-        }    
+        }
     }
 }

@@ -18,8 +18,10 @@ export class CreateFileCommand extends CommandBase {
     }
 
     protected shouldRun(item: TreeItem): boolean {
-        if(!!item.project) {
-            this._workspaceRoot = item.workspaceRoot;
+        if((!!item && !!item.project) || !!this.provider.activeNode) {
+            this._workspaceRoot = !!item 
+                    ? item.workspaceRoot
+                    : this.provider.activeNode.workspaceRoot;
             return true;
         }
     }
@@ -27,8 +29,10 @@ export class CreateFileCommand extends CommandBase {
     protected async runCommand(item: TreeItem, args: string[]): Promise<void> {
         if (!args || args.length <= 0) return;
 
+        item = !!item ? item  : this.provider.activeNode;
+        
         try {
-            let targetpath: string = item.path;
+            let targetpath: string = item.path 
             if (!item.contextValue.startsWith(ContextValues.ProjectFolder))
                 targetpath = path.dirname(targetpath);
 

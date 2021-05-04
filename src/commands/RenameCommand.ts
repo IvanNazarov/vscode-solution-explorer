@@ -15,23 +15,27 @@ export class RenameCommand extends CommandBase {
             new InputTextCommandParameter('New name', item.label, null, item.label)
         ];
 
-        return !!item.project;
+        return (!!item && !!item.project) ||
+            (!!this.provider.activeNode &&
+                !!this.provider.activeNode.project);
     }
 
     protected async runCommand(item: TreeItem, args: string[]): Promise<void> {
         if (!args || args.length <= 0) return;
+
+        item = !!item ? item : this.provider.activeNode;
 
         try {
             if (item.contextValue.startsWith(ContextValues.ProjectFile))
                 await item.project.renameFile(item.path, args[0]);
             else if (item.contextValue.startsWith(ContextValues.ProjectFolder))
                 await item.project.renameFolder(item.path, args[0]);
-            else 
+            else
                 return;
 
             this.provider.logger.log("Renamed: " + item.path + " -> " + args[0]);
-        } catch(ex) {
+        } catch (ex) {
             this.provider.logger.error('Can not rename item: ' + ex);
-        }    
+        }
     }
 }
